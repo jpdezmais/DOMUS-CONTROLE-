@@ -1,0 +1,105 @@
+{
+  "entities": {
+    "Client": {
+      "title": "Client",
+      "description": "A client in the system.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Client name" },
+        "cpf": { "type": "string", "description": "Client CPF" },
+        "cnpj": { "type": "string", "description": "Client CNPJ" },
+        "residentialAddress": { "type": "string", "description": "Residential address" },
+        "deliveryAddress": { "type": "string", "description": "Delivery address" },
+        "email": { "type": "string", "format": "email", "description": "Client email" },
+        "phone": { "type": "string", "description": "Client phone" },
+        "contactDate": { "type": "string", "format": "date-time", "description": "Contact date" },
+        "referredBy": { "type": "string", "description": "Who referred the client" },
+        "partnerArchitectId": { "type": "string", "description": "Partner architect ID" },
+        "partnerArchitectName": { "type": "string", "description": "Partner architect name" },
+        "createdAt": { "type": "number", "description": "Creation timestamp" },
+        "ownerId": { "type": "string", "description": "Owner ID" }
+      },
+      "required": ["name", "email", "phone", "contactDate", "createdAt", "ownerId"]
+    },
+    "Architect": {
+      "title": "Architect",
+      "description": "An architect in the system.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Architect name" },
+        "cau": { "type": "string", "description": "Architect CAU" },
+        "phone": { "type": "string", "description": "Architect phone" },
+        "email": { "type": "string", "format": "email", "description": "Architect email" },
+        "officeName": { "type": "string", "description": "Office/Company name" },
+        "address": { "type": "string", "description": "Office address" },
+        "createdAt": { "type": "number", "description": "Creation timestamp" },
+        "ownerId": { "type": "string", "description": "Owner ID" }
+      },
+      "required": ["name", "phone", "email", "createdAt", "ownerId"]
+    },
+    "Sale": {
+      "title": "Sale",
+      "description": "A sale record.",
+      "type": "object",
+      "properties": {
+        "clientId": { "type": "string", "description": "Client ID" },
+        "clientName": { "type": "string", "description": "Client name" },
+        "description": { "type": "string", "description": "Sale description" },
+        "status": { 
+          "type": "string", 
+          "enum": ["Orcamento", "Contrato", "Medicao", "Producao", "Entrega", "Finalizado"],
+          "description": "Sale status" 
+        },
+        "cost": { "type": "number", "description": "Sale cost" },
+        "commission": { "type": "number", "description": "Sale commission" },
+        "miscExpenses": { "type": "number", "description": "Miscellaneous expenses" },
+        "purchaseDate": { "type": "string", "format": "date-time", "description": "Purchase date" },
+        "deliveryDate": { "type": "string", "format": "date-time", "description": "Delivery date" },
+        "executiveMeasurementDate": { "type": "string", "format": "date-time", "description": "Executive measurement date" },
+        "executiveProjectApprovalDate": { "type": "string", "format": "date-time", "description": "Executive project approval date" },
+        "budgetFileUrl": { "type": "string", "description": "Budget file URL" },
+        "contractFileUrl": { "type": "string", "description": "Contract file URL" },
+        "projectFileUrl": { "type": "string", "description": "Project file URL" },
+        "createdAt": { "type": "number", "description": "Creation timestamp" },
+        "ownerId": { "type": "string", "description": "Owner ID" }
+      },
+      "required": ["clientId", "clientName", "description", "status", "cost", "purchaseDate", "deliveryDate", "createdAt", "ownerId"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "Company settings.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Company name" },
+        "logoUrl": { "type": "string", "description": "Company logo URL" },
+        "address": { "type": "string", "description": "Company address" },
+        "contact": { "type": "string", "description": "Company contact" },
+        "theme": { "type": "string", "enum": ["dark", "light", "gray"], "description": "App theme" },
+        "ownerId": { "type": "string", "description": "Owner ID" }
+      },
+      "required": ["name", "theme", "ownerId"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "A user profile in the system.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "User UID" },
+        "email": { "type": "string", "format": "email", "description": "User email" },
+        "displayName": { "type": "string", "description": "User display name" },
+        "photoURL": { "type": "string", "description": "User photo URL" },
+        "role": { "type": "string", "enum": ["admin", "user"], "description": "User role" },
+        "status": { "type": "string", "enum": ["pending", "authorized", "rejected"], "description": "User authorization status" },
+        "createdAt": { "type": "number", "description": "Creation timestamp" }
+      },
+      "required": ["uid", "email", "displayName", "role", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/clients/{clientId}": { "schema": "Client", "description": "Collection of clients" },
+    "/architects/{architectId}": { "schema": "Architect", "description": "Collection of architects" },
+    "/sales/{saleId}": { "schema": "Sale", "description": "Collection of sales" },
+    "/settings/company": { "schema": "Settings", "description": "Company settings document" },
+    "/users/{userId}": { "schema": "UserProfile", "description": "Collection of user profiles" }
+  }
+}

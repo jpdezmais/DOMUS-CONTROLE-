@@ -1,0 +1,5 @@
+{
+  "name": "Sistema de Gestão de Vendas e Projetos",
+  "description": "Sistema completo para controle de vendas, clientes, prazos e integração com Google Agenda.",
+  "requestFramePermissions": []
+}

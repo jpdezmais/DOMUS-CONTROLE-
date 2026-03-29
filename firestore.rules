@@ -1,0 +1,200 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: clients
+// Document ID: auto-generated
+// Fields:
+//   - name: string (required)
+//   - email: string (required, email format)
+//   - phone: string (required)
+//   - architectName: string (optional)
+//   - architectContact: string (optional)
+//   - hasRT: bool (required)
+//   - createdAt: number (required)
+//   - ownerId: string (required, matches auth.uid)
+//
+// Collection: sales
+// Document ID: auto-generated
+// Fields:
+//   - clientId: string (required)
+//   - clientName: string (required)
+//   - description: string (required)
+//   - cost: number (required, positive)
+//   - commission: number (required)
+//   - miscExpenses: number (required)
+//   - purchaseDate: string (required, ISO 8601)
+//   - deliveryDate: string (required, ISO 8601)
+//   - executiveMeasurementDate: string (required, ISO 8601)
+//   - executiveProjectApprovalDate: string (required, ISO 8601)
+//   - budgetFileUrl: string (optional, URL)
+//   - contractFileUrl: string (optional, URL)
+//   - projectFileUrl: string (optional, URL)
+//   - createdAt: number (required)
+//   - ownerId: string (required, matches auth.uid)
+//
+// Collection: settings
+// Document ID: company
+// Fields:
+//   - name: string (required)
+//   - logoUrl: string (optional, URL)
+//   - address: string (optional)
+//   - contact: string (optional)
+//   - ownerId: string (required, matches auth.uid)
+//
+// ===============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.ownerId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
+          (request.auth.token.email == "jpunitau@gmail.com")
+        );
+    }
+
+    function isAuthorized() {
+      return isAuthenticated() && 
+        (
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'authorized') || 
+          isAdmin()
+        );
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidUrl(url) {
+      return url is string && (url.matches("^https://.*") || url.matches("^http://.*"));
+    }
+
+    function isValidDateString(dateStr) {
+      return dateStr is string && dateStr.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?$");
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidClient(data) {
+      return data.keys().hasAll(['name', 'email', 'phone', 'contactDate', 'createdAt', 'ownerId']) &&
+             data.keys().hasOnly(['name', 'cpf', 'cnpj', 'residentialAddress', 'deliveryAddress', 'email', 'phone', 'contactDate', 'referredBy', 'partnerArchitectId', 'partnerArchitectName', 'createdAt', 'ownerId']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             isValidEmail(data.email) &&
+             data.phone is string && data.phone.size() > 0 && data.phone.size() < 30 &&
+             isValidDateString(data.contactDate) &&
+             data.createdAt is number &&
+             data.ownerId == request.auth.uid;
+    }
+
+    function isValidArchitect(data) {
+      return data.keys().hasAll(['name', 'phone', 'email', 'createdAt', 'ownerId']) &&
+             data.keys().hasOnly(['name', 'cau', 'phone', 'email', 'officeName', 'address', 'createdAt', 'ownerId']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.phone is string && data.phone.size() > 0 && data.phone.size() < 30 &&
+             isValidEmail(data.email) &&
+             data.createdAt is number &&
+             data.ownerId == request.auth.uid;
+    }
+
+    function isValidSale(data) {
+      let validStatuses = ['Orcamento', 'Contrato', 'Medicao', 'Producao', 'Entrega', 'Finalizado'];
+      return data.keys().hasAll(['clientId', 'clientName', 'description', 'status', 'cost', 'commission', 'miscExpenses', 'purchaseDate', 'deliveryDate', 'executiveMeasurementDate', 'executiveProjectApprovalDate', 'createdAt', 'ownerId']) &&
+             data.keys().hasOnly(['clientId', 'clientName', 'description', 'status', 'cost', 'commission', 'miscExpenses', 'purchaseDate', 'deliveryDate', 'executiveMeasurementDate', 'executiveProjectApprovalDate', 'createdAt', 'ownerId', 'budgetFileUrl', 'contractFileUrl', 'projectFileUrl']) &&
+             data.clientId is string &&
+             data.clientName is string &&
+             data.description is string && data.description.size() < 1000 &&
+             data.status in validStatuses &&
+             data.cost is number && data.cost >= 0 &&
+             data.commission is number && data.commission >= 0 &&
+             data.miscExpenses is number && data.miscExpenses >= 0 &&
+             isValidDateString(data.purchaseDate) &&
+             isValidDateString(data.deliveryDate) &&
+             isValidDateString(data.executiveMeasurementDate) &&
+             isValidDateString(data.executiveProjectApprovalDate) &&
+             data.createdAt is number &&
+             data.ownerId == request.auth.uid;
+    }
+
+    function isValidSettings(data) {
+      return data.keys().hasAll(['name', 'theme', 'ownerId']) &&
+             data.keys().hasOnly(['name', 'ownerId', 'logoUrl', 'address', 'contact', 'theme']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.theme in ['dark', 'light', 'gray'] &&
+             data.ownerId == request.auth.uid;
+    }
+
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['uid', 'email', 'displayName', 'role', 'status', 'createdAt']) &&
+             data.keys().hasOnly(['uid', 'email', 'displayName', 'photoURL', 'role', 'status', 'createdAt']) &&
+             data.uid == request.auth.uid &&
+             isValidEmail(data.email) &&
+             data.role in ['admin', 'user'] &&
+             data.status in ['pending', 'authorized', 'rejected'] &&
+             data.createdAt is number;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow create: if isAuthenticated() && isValidUserProfile(request.resource.data) && 
+                    (
+                      (request.resource.data.role == 'user' && request.resource.data.status == 'pending') ||
+                      (request.auth.token.email == "jpunitau@gmail.com")
+                    );
+      allow update: if isAdmin() && isValidUserProfile(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /clients/{clientId} {
+      allow read: if isDocOwner() && isAuthorized();
+      allow create: if isAuthenticated() && isAuthorized() && isValidClient(request.resource.data);
+      allow update: if isDocOwner() && isAuthorized() && isValidClient(request.resource.data) && request.resource.data.ownerId == resource.data.ownerId;
+      allow delete: if isDocOwner() && isAuthorized();
+    }
+
+    match /architects/{architectId} {
+      allow read: if isDocOwner() && isAuthorized();
+      allow create: if isAuthenticated() && isAuthorized() && isValidArchitect(request.resource.data);
+      allow update: if isDocOwner() && isAuthorized() && isValidArchitect(request.resource.data) && request.resource.data.ownerId == resource.data.ownerId;
+      allow delete: if isDocOwner() && isAuthorized();
+    }
+
+    match /sales/{saleId} {
+      allow read: if isDocOwner() && isAuthorized();
+      allow create: if isAuthenticated() && isAuthorized() && isValidSale(request.resource.data);
+      allow update: if isDocOwner() && isAuthorized() && isValidSale(request.resource.data) && request.resource.data.ownerId == resource.data.ownerId;
+      allow delete: if isDocOwner() && isAuthorized();
+    }
+
+    match /settings/{docId} {
+      allow read: if isAuthorized();
+      allow create: if isAdmin() && isValidSettings(request.resource.data);
+      allow update: if isAdmin() && isValidSettings(request.resource.data);
+      allow delete: if isAdmin();
+    }
+  }
+}

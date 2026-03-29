@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-950: var(--brand-950);
+  --color-brand-900: var(--brand-900);
+  --color-brand-800: var(--brand-800);
+  --color-brand-700: var(--brand-700);
+  --color-brand-600: var(--brand-600);
+  --color-brand-500: var(--brand-500);
+  --color-brand-400: var(--brand-400);
+  --color-brand-300: var(--brand-300);
+  --color-brand-200: var(--brand-200);
+  --color-brand-100: var(--brand-100);
+  --color-brand-50: var(--brand-50);
+
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-blue-dark: var(--accent-blue-dark);
+}
+
+:root {
+  /* Default: Dark Theme */
+  --brand-950: #020617;
+  --brand-900: #0f172a;
+  --brand-800: #1e293b;
+  --brand-700: #334155;
+  --brand-600: #475569;
+  --brand-500: #64748b;
+  --brand-400: #94a3b8;
+  --brand-300: #cbd5e1;
+  --brand-200: #e2e8f0;
+  --brand-100: #f1f5f9;
+  --brand-50: #f8fafc;
+  --accent-blue: #3b82f6;
+  --accent-blue-dark: #2563eb;
+}
+
+[data-theme='light'] {
+  --brand-950: #f8fafc;
+  --brand-900: #f1f5f9;
+  --brand-800: #e2e8f0;
+  --brand-700: #cbd5e1;
+  --brand-600: #94a3b8;
+  --brand-500: #64748b;
+  --brand-400: #475569;
+  --brand-300: #334155;
+  --brand-200: #1e293b;
+  --brand-100: #0f172a;
+  --brand-50: #020617;
+  --accent-blue: #2563eb;
+  --accent-blue-dark: #1d4ed8;
+}
+
+[data-theme='gray'] {
+  --brand-950: #18181b;
+  --brand-900: #27272a;
+  --brand-800: #3f3f46;
+  --brand-700: #52525b;
+  --brand-600: #71717a;
+  --brand-500: #a1a1aa;
+  --brand-400: #d4d4d8;
+  --brand-300: #e4e4e7;
+  --brand-200: #f4f4f5;
+  --brand-100: #fafafa;
+  --brand-50: #ffffff;
+  --accent-blue: #6366f1;
+  --accent-blue-dark: #4f46e5;
+}
+
+body {
+  @apply bg-brand-950 text-brand-100;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--brand-900);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--brand-700);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-600);
+}
